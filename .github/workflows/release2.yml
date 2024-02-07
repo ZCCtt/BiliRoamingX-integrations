@@ -23,27 +23,23 @@ jobs:
           # https://github.com/cycjimmy/semantic-release-action#private-packages
           persist-credentials: false
           fetch-depth: 0
-
-      - name: Cache Gradle
-        uses: burrunan/gradle-cache-action@v1
-
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ runner.home }}/.gradle/caches
+            ${{ runner.home }}/.gradle/wrapper
+            .gradle
+            node_modules
+          key: ${{ runner.os }}-gradle-npm-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'package-lock.json') }}
       - name: Setup Java
         run: echo "JAVA_HOME=$JAVA_HOME_17_X64" >> $GITHUB_ENV
-
-      - name: Build
+      - name: Build with Gradle
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew build clean
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "lts/*"
-          cache: 'npm'
-
-      - name: Install dependencies
+      - name: Setup semantic-release
         run: npm install
-
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.REPOSITORY_PUSH_ACCESS }}
